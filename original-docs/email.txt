@@ -1,0 +1,831 @@
+----MESSAGE-BEGIN---- [9312071447.AA05533@dsiaq1.ing.univaq.it] <1993120621470700>
+From: tdnycal@dsiaq1.ing.univaq.it (Dell'Elce Antonio)
+Newsgroups: comp.protocols.tcp-ip
+Subject: A Remote Query Protocol
+Date: 7 Dec 1993 07:47:07 -0600
+Organization: UTexas Mail-to-News Gateway
+Lines: 817
+Sender: daemon@cs.utexas.edu
+Message-ID: <9312071447.AA05533@dsiaq1.ing.univaq.it>
+NNTP-Posting-Host: cs.utexas.edu
+
+
+Here is a my protocol .. the Remote Query Protocol
+I have styled it like an Internet-Draft...
+
+
+I would like comments on it. Thank you.
+I will summarize to that net. If any need.
+
+Antonio dell`elce
+tdnycal@dsiaq1.ing.univaq.it
+
+
+-----------------------------------------------------------------------
+draft-rquery-protocol-01.txt			      Antonio Dell'elce
+INTERNET-DRAFT						  November 1993
+
+
+
+			 Remote  Query  Protocol
+
+
+1.0 Status of this memo
+
+This document is an Internet-Draft. Internet-Drafts are working douments
+of the Internet Engineering Task Force (IETF), its areas, and its
+working group. Note that other groups may also distribute working
+documents at any time. It is not appropriate to use Internet-Drafts as
+reference material or to cite them other than as a "working draft" or
+"work in progress."
+
+To learn the current status of any Internet-Draft, please check the
+1id-abstracts.txt list contained in the Internet-Drafts Shadow
+DIrectories on ds.internic.net, nic.nordu.net, ftp.nisc.sri.com, or
+munnari.oz.au.
+
+
+2.0 Abstract
+
+The purpose of the Rquery protocol is just to get information, alas it
+makes possible to send a question to a remote host about certain
+information it may have. The question received by the remote host
+It must work in any computer network. Domains are used only where they
+exist.
+
+Examples of the RQUERY call may be: "What Services do you offer?", "Do
+you know a host called XYZ?", "Is there a host a you know that supports
+the XYZ protocol?", and so on. 
+
+  (36)							       [Page  1]
+
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+Things that may be object of a remote query may be:
+
+	-  SERVICES
+	   
+	   Any services that can be offered at remote site, such
+	   Anonymous FTP, gophers, BBSes, guest or restricted accounts,
+	   accounts on payment, NICs, or any other service. Queries
+	   wanting information of a service, already. However, are more
+	   difficult to implement.
+	   
+	   
+	-  PROTOCOLS
+	   
+	   Any protocol offered. This kind of query has importance since
+	   you may ask the protocol of any other host. See example 11.
+	   
+	   
+	-  HOSTS/DOMAINS
+	   
+	   They are used for querying about existence of hosts, domains
+	   and existence of a certain host under a certain domain, and
+	   similar.
+	   
+	   
+	-  USERS
+	   
+	   Querying for users may result as using RWHO, RUSERS, FINGER
+	   and other this kind of queries may ask about users existance,
+	   log-ins, in you host, domain, network or even host, domain or
+	   network in another domain.
+	   
+	   
+	-  OTHERS
+
+	   Querying a conventional database for example. It may be used
+	   with any other given convention set with the two parties (the
+	   querying and the replier).
+
+
+
+
+Dell'elce (81)						        [Page 2]
+ 
+NETWORKING-DRAFT	     Remote Query Protocol	     November 93
+
+
+The question may be asking about the resources, (1) of the same host 
+queried, this is the network cosuming approach,(2) another host, (3)
+a domain, or (4) a mixed of them.
+
+Examples of an RQUERY for the case (1 - SERVICES) are:
+
+00	"do you offer anonymous FTP?"
+01	"do you have Public Accounts?"
+02	"do you know user DOE?"
+03	"what hosts there are in your domain?"
+	
+examples of an RQUERY for case (2 - HOST/DOMAINS) are:
+
+04	"do you know a host that offers anonymous FTP service?"
+05	"do you know a host that have Public Accounts?"
+06	"do you know what services offer host XX.LCS.ANY.EDU?"
+07	"do you know a server for the RQUERY protocol?"
+08	"do you know a nameserver for domain ANY.EDU?"
+09	"what hosts that offer Public Accounts do you know?"
+10	"what hosts in the domain offer DIALUP service?"
+11	"what protocols offer the VAXUX1.MYCOM.COM?"
+12	"what services offer the VAXUX1.MYCOM.COM?"
+
+examples of an RQUERY for case (3 - USERS) are:
+
+13	"do you know user *?"
+
+
+examples of an RQUERY for case (4 - OTHERS) are:
+
+14	"give me information about zz001 in the ZZ database!"
+
+The RQUERY protocol itself does not offer a way to traslate these
+questions in computer-readable format, but the RQUERY itself try to
+offer a medium for an already traslated question to be sent over a
+network, and a reply be obtained.
+
+
+
+Dell'elce (125)						       [Page  3]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+
+Table of contents
+
+
+1.0 Status of this memo . . . . . . . . . . . . . . . . . . . . . . . . 1
+2.0 Abstract. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+3.0 Reply examples  . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+    3.1 Affermative reply . . . . . . . . . . . . . . . . . . . . . . . 5
+    3.2 Error reply . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+    3.3 Query-another . . . . . . . . . . . . . . . . . . . . . . . . . 5
+    3.4 Mixed reply . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+4.0 Format of a RQUERY packet . . . . . . . . . . . . . . . . . . . . . 6
+5.0 Description of RQUERY Packet  . . . . . . . . . . . . . . . . . . . 6
+    5.1 Fields meanings . . . . . . . . . . . . . . . . . . . . . . . . 8
+	5.1.1 ID  . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+	5.1.2 Type  . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+	5.1.3 Information required host . . . . . . . . . . . . . . . . 8
+	5.1.4 Recursion . . . . . . . . . . . . . . . . . . . . . . . . 9
+	5.1.5 Date or timestamp . . . . . . . . . . . . . . . . . . . . 9
+	5.1.6 Priority  . . . . . . . . . . . . . . . . . . . . . . . . 9
+	5.1.7 Target  . . . . . . . . . . . . . . . . . . . . . . . . . 9
+	5.1.8 Query type  . . . . . . . . . . . . . . . . . . . . . . .10
+	5.1.9 Sequence  . . . . . . . . . . . . . . . . . . . . . . . .10
+	5.1.10 Owner  . . . . . . . . . . . . . . . . . . . . . . . . .10
+   5.2 Strings format and types . . . . . . . . . . . . . . . . . . . .10
+       5.2.1 String Types . . . . . . . . . . . . . . . . . . . . . . .11
+   5.3 Datestamp format . . . . . . . . . . . . . . . . . . . . . . . .11
+   5.4 Structure of the QUERY field . . . . . . . . . . . . . . . . . .12
+6.0 Rquery errors numbers . . . . . . . . . . . . . . . . . . . . . . .12
+    6.1 Eplanation of Error codes . . . . . . . . . . . . . . . . . . .13
+	6.1.1 No recursion  . . . . . . . . . . . . . . . . . . . . . .13
+	6.1.2 Bad Packet format . . . . . . . . . . . . . . . . . . . .13
+	6.1.3 No information  . . . . . . . . . . . . . . . . . . . . .13
+	6.1.4 Too vague query . . . . . . . . . . . . . . . . . . . . .13
+	6.1.5 Packet time-of-send expired . . . . . . . . . . . . . . .13
+	6.1.6 Temporarily not accepting queries . . . . . . . . . . . .13
+	6.1.7 Special queries not supported . . . . . . . . . . . . . .14
+	6.1.8 Too congested for Special queries . . . . . . . . . . . .14
+	6.1.9 Can't solve question  . . . . . . . . . . . . . . . . . .14
+	6.1.10 Rqueries unsupported . . . . . . . . . . . . . . . . . .14
+7.0 Possible behaviors of Rquery resolver . . . . . . . . . . . . . . .15
+    7.1 Caching of Rquery replies . . . . . . . . . . . . . . . . . . .15
+8.0 Syntax resolving  . . . . . . . . . . . . . . . . . . . . . . . . .15
+    8.1 Examples of solved queries  . . . . . . . . . . . . . . . . . .16
+9.0 Rquery extensions . . . . . . . . . . . . . . . . . . . . . . . . .16
+    9.1 Updating databases  . . . . . . . . . . . . . . . . . . . . . .17
+10.0 Security or Authentication . . . . . . . . . . . . . . . . . . . .17
+     10.1 The Simple Security Protocol  . . . . . . . . . . . . . . . .17
+11.0 Author's Address . . . . . . . . . . . . . . . . . . . . . . . . .17
+12.0 Document Expiration  . . . . . . . . . . . . . . . . . . . . . . .17
+
+Dell'elce (180)						        [Page 4]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+2.0 Rquery Replies
+
+
+There various ways a RQUERY may be replied:
+
+(a)  Affermative reply: the host queried replied affermatively.
+(b)  error reply: the host queried replied negativily.
+(c)  query-another: the queried replies saying to query another host.
+(d)  mixed reply: the host replies negatively saying to query another
+     host. 
+
+The reply packet will contain the same ID of the question which it is a
+reply. 
+
+
+2.1 Affermative reply
+
+An affermative reply, is built by the queried host depending on the data
+it can find in its databases, a way to keep information for replying to
+rqueries can found among RQUERY extension, that must not be considered
+$mandatory pert of the protocol, but just an $optional one.
+
+
+2.2 Error reply
+
+The negative reply is issued whenever the queried system doesn't have
+information about the subject queried, couldn't find any data about the query,
+does not support Rquery (in this case it will usually use a mixed-reply, see
+2.4).
+
+The Rquery error packet will contain just one field other than the Header, the
+error string.
+
+
+2.3 Query-another
+
+This is a very important side of this protocol since it permits to
+program (or to a user.
+
+
+2.4 Mixed reply
+
+Usually a mixed reply happens when the reply error contain an error
+string plus the resend field stating a place where the query-sender.
+
+
+Dell'elce (230)						       [Page  5]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+3.0 Format of a RQUERY packet
+
+The Rquery protocol should be used with any kind of underlying protocol.
+
+Each string in the RQUERY protocol mast be a packet string i.e a string
+with a byte (8-octet) header. Each string should be an UPPERCASE string,
+whenever possible, since the query must be case-insensitive. The Rquery
+strings are describe in section 4.2.
+
+A graphical description of the Rquery packet follows in section 4.0.
+
+
+4.0 Description of a Rquery Packet
+
+The Header
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |		I				D	       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |        	      S  e  q  u  e  n  c e		       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       | Q   Q | H   H | R | D | P   P   P   P | O | T   T   T | S   S |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |			     P  A  D			       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			T I M E S T A M P		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+
+
+
+
+Dell'elce (269)						       [Page  6]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+- Body of (a normal packet) packet:
+
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			   O R I G I N			       \
+       \		       ( O p t i o n a l )		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \		    Q U E S T I N G  U S E R		       \
+       \		       ( O p t i o n a l )		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			    H  O  S  T			       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \		     R E S O U R C E  T Y P E		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			     Q U E R Y			       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			     R E P L Y			       \
+       \		        ( O p t i o n a l )		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			   C O M M E N T		       \
+       \		        ( O p t i o n a l )		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+
+						 1   1   1   1   1   1
+	 0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |		     R Q U E R Y  H E A D E R		       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |			     E R R O R			       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |							       |
+       \			    H  O  S  T			       \
+       \		        ( O p t i o n a l )		       \
+       |							       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+Dell'elce (323)						       [Page  7]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+The fields: ORIGIN, QUESTING-USER are optional string-fields that
+represent the querying user. The origin means the host where the user
+generated the query.
+The QUESTING-USER contains the name of the user. They might be useful
+depending on the network, programs, the lower-level protocols used,
+especially if they do not show specifically the sender of packet.
+
+
+The fields HOST, RESOURCE-TYPE, QUERY, are all strings as described in
+(), they represent, in the field 'host', the host of which information
+is wanted, in the field resource-type, the kind of resource the system
+is queried, in the field query, there is the core of the RQUERY.
+
+The error packet type contains but the header only the error string.
+
+
+4.1 Fields meanings
+
+Following fields are graphically described in the section 4.0.
+	
+
+4.1.1 Identifier.
+
+Identify a single RQUERY-Ask packet. It is originated by the sender.
+Any reply to the query should have the same ID.
+
+
+4.1.2 Type.
+
+It is marked by QQ in the graphical description. This field describe the
+type of format of the RQUERY packet Values:
+	
+	00 Ask packet
+	01 Reply packet.
+	10 Error packet.
+	11 Extesion packet This last type is used when data received as
+	   reply is longer more than the maximum size of a Rquery
+	   packet. 
+
+
+4.1.3 Information required host.
+	
+It is marked by HH in the graphical description. It points of which host
+or hosts the query wants information Values:
+	
+	00 Host to which the RQUERY is sent.
+	01 Only the host specified in the Host field.
+	10 A Domain specified in the Host field.
+	11 A List of host and domains Specified in the Host field.
+	
+Using "*" as a name of a system, Any system is meant..
+
+Dell'elce (379)						       [Page  8]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+4.1.4 Recursion.
+	
+It is marked by A in the graphical description. It says to the queried
+host to send the question to other hosts in the case it can't reply to
+or can't send a full reply to the query. Values:
+	
+	0  Don't send to other hosts.
+	1  Send to other hosts or do recursion.
+	
+
+4.1.5 Date or timestamp.
+	
+It is marked D in the graphical description. If set it means that a
+date/timestamp field is used to show to time the message is sent.
+This field however refers to the timestamp which idicates when the query
+has been generated.
+
+Values:
+	
+	0  Timestamp is not used.
+	1  Timestamp is used. It must be used if packet is of kind 00 or
+	   11. 
+	
+	
+4.1.6 Priority.
+	
+It is marked by PPPP (four bits) in the graphical description. It is
+priority of the Rquery.
+
+It is set by the sender according what the sender thinks may receive
+as reply to the question. A RQUERY must have a lower priority if it
+the data expected as a reply will be very long. Zero (0000) is the
+highest priority meanwhile fifteen (1111) is the lowest priority.
+
+
+4.1.7 Target.
+
+The target of the query, what is the object of the query. It should be
+of help to the Rquery-solver to do its work.
+
+		000 services
+		001 protocols
+		010 hosts/domains
+		011 <undefined>
+		100 <undefined>
+		101 <undefined>
+		110 private convention query
+		111 others
+
+Dell'elce (432)						       [Page  9]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+
+4.1.8 Special query-type
+
+The meaning of this field is still to be defined.
+
+
+4.1.9 Sequence
+
+It is used to reconstruct message that was divided in several packets
+(of course this field is only used when the lower level protocol doesn't
+support message reconstruction, and when packet is so large that it must
+be divided by the lower level protocol.
+
+Recostruction of a message is done this way: The reconstruct must 'keep
+in mind' the Sequence number and the ID number. All packets with same
+ID, are part of the same message. Usually the need of a message
+reconstruction will only needed if packets are part of reply.
+ 
+
+4.1.10 Owner
+
+It estabilishes who is the original sender of the query. It is set to 0
+if the query is originated by another, otherwise it is set to 1, meaning
+it is originated by the packet sender itself. This filed offers a faster
+means to control who is the sender of the packet. The receiver of a
+packet may not consider it 
+
+
+4.2 Strings format and usage
+
+With the term string is by represented a data container, which is used
+to 'contain' information about either the question and the reply. By it
+may be represented either normal ASCII string 
+ a 1st byte is used a the
+string-type field described in 4.2.1., than there is a size word, which
+permits a size of the string of up to 65536 characters (the value 0 is
+considered as 1). The strings in the RQUERY follow the header bitmaps
+and may have any order, however they differ depending to the kind of
+Rquery packet:
+
+- A Rquery ask packet
+
+The ASK packet has the Origin and Questing-user fields (optional),
+which says who has sent the packet, for example a packet sent by
+NOSEY@NOSEY-ALPHA.MYNET.MYCOM.COM, would have the Origin set as
+"NOSEY-ALPHA.MYNET.MYCOM.COM" and the Questing user set as "NOSEY".
+	
+After these two optional fields comes the core of the ASK packet, comes
+the core the packet the strings host, resource-type, query (see notes of
+paragraph 4.0.).
+	
+
+Dell'elce (488)						       [Page 10]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+4.2.1 String types
+
+Types of strings in the Rquery protocol. This ID are places
+
+
+String name		ID
+
+Host			 1
+Resource type		 2
+Query			 3
+Comment			 4
+Origin			 5
+Reply			 6
+Questing user		 7
+Security		 8
+Timestamp		 9
+
+
+
+4.3 Datestamp format
+
+A datestamp is long 64 bits and divided in 4 equal fields, each is an
+signless 16-bit word. The structure following is used alone in the
+Rquery header and is 'ecapsulated' in the Timestamp string.
+
+
+- It is the number of YEARs.
+
+- It represents the number of DAYS.
+
+- Each unit represents 15 seconds.
+
+- The last word represents the WHY of the datestamp origin.
+
+
+			    D  A  T  E  S  T  A  M  P
+
+						 1   2   3   4   5   6
+	 0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |	 First word (Unsigned)	 	Number of Years.       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |	 Second	word (Unsigned) Number of Days.		       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |	 Third Word (Unsigned)  Numner of quarter of Minutes   |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |	 Last word (Unsigned)   Why of datestamp origin	       |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+
+Dell'elce (542)						       [Page   ]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+4.4 Structure of the QUERY field
+
+The Query string-field follows a particular structure:
+the first two bits in the first byte of the string,
+
+
+		      0   1   2   3   4   5   6   7
+		    +---+---+---+---+---+---+---+---+
+		    |          <binary keys>        |
+		    +---+---+---+---+---+---+---+---+
+		    |	       <string keys>        |
+		    +---+---+---+---+---+---+---+---+
+		    |				    |
+		    \		  K E Y S	    \
+		    |				    |
+		    +---+---+---+---+---+---+---+---+
+
+The <binary-keys> field contains the number of keys of the question,
+they are described in 8.0., and are a list 16-bits 'words'. The
+<string-keys> is the number keys which is 
+
+
+5.0 Errors
+
+An error may happen for any $motif (see 5.1), the error field which is a
+string as any other field is
+
+
+List of Errors code numbers
+
+Number		Error name
+
+  1		No recursion
+  2		Bad packet format
+  3		No information
+  4		Too vague query
+  5		Packet time-of-send expired
+  6		Temporarily not accepting queries
+  7		Special queries not accepted
+  8		Too congested for Special queries
+  9		Can't solve question
+ 10		Rqueries unsupported
+
+
+
+
+Dell'elce (592)						       [Page   ]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+5.1 Eplanation of Error codes
+
+5.1.1 No recursion
+
+The query packet sent wanted recursion, but the replying host didn't
+offer it, so an the server host had to sent back error of code 1.
+
+5.1.2 Bad Packet format
+
+The packet received by the replier was corrupt or strings of undefined
+type. This error may happen when query had a 'private convention' that
+the replier didn't know.
+
+5.1.3 No information
+
+No information was found or could be found about query sent.
+
+5.1.4 Too vague query
+
+The query sent may result in a too large reply that the replier does not
+allow. This may be set accordingly to the server (replier) will, if the
+replier is located in a low-bandwidth net, the reply may 'clog' the
+network.
+
+5.1.5 Packet time-of-send expired
+
+The packet is too old, alas it has gone too much around the network too
+be served, this error code must be used to save network bandwidth. The
+error code may verify want the Recursion flag is set (this means that
+the querying host wanted the query to be forwarded to other hosts and
+doing so has reach the error-replying host too late for a reply).
+
+5.1.6 Temporarily not accepting queries
+
+The replying host is tempoararily not accepting Rqueries for any reason.
+
+Dell'elce (635)						       [Page   ]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+5.1.7 Special queries not supported.
+
+The Rquery packet contains a query that can't be replied by the receiver
+due to its kind.
+
+5.1.8 Too congested for Special queries
+
+The kind of query sent exceed the maximum that can be served due to the
+many other being server.
+
+5.1.9 Can't solve question
+
+The time given iternally to any query to be 'solved' has finished. There
+must be set a time-limit, for not consuming much system(proc)-time or for
+the query to be replied too slowly.
+
+5.1.10 Rqueries unsupported
+
+This reply may be sent by a ``simple replier'' so to let know that it
+does not offer Rquery and optionally query antoher system.
+
+
+
+Dell'elce (665)						       [Page   ]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+7.0 Possible behaviors of Rquery resolver
+
+A program has't to know the way a Rquery-resolver treating its query,
+but however it can trace the replies it has from that 'resolver', in
+order to avoid unuseful duplication of datagrams in the network.
+
+7.1 Caching Rquery replies
+
+Sometimes maintaining an 'history' of the replies obtained to queries,
+will permit a better forwarding of future queries. As avoiding send the
+query to host that are unable to reply.
+
+- Keeping note of forwarding-errors
+
+A host may reply to the query by saying you to (r)query another host,
+this may be kept aside since when processing another query may be of
+help.
+
+For example if in a domain, a host if used as the lone-in-domain Rquery
+replier, and if you send a Rquery to system 'Z.LCS.ANY.EDU', i wil
+probably say you: RQUERY is protocol unsupported, send RQUERY to
+'RQS.ANY.EDU'. The local resolver should cache it and next time send the
+query to 'RQS.ANY.EDU' then if necessary send it to 'Z.LCS.ANY.EDU'.
+
+An example of caching:
+
+host		pri	handled-by
+Z.LCS.ANY.EDU	16	RQS.ANY.EDU
+
+This is example is taken for the case of error 10 ('Rquery unsupported',
+5.1.10). Future queries that wanted information about Z.LCS.ANY.EDU will
+be send to RQS.ANY.EDU; Another feature that can be added to the caching
+is a TTL field (time-to-live), the will contain the time (in seconds)
+information about it is valid.
+ 
+8.0 Syntax resolving
+
+This how the question send through Rqueries must be solved.
+This is a list of question keywords solved to a 16-octet word.
+
+Syntax		Hexadecimal encoding	Syntax aliases
+
+which		0001			
+where		0002			
+what		0003			who
+do		0004			do you, do he, do it, and
+					similar 
+
+is		1001			
+has		1002
+know		1003			knows, is known to
+offer		1004			offers, offering
+
+
+Dell'elce (725)						       [Page 15]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+8.1 Examples of solved queries.
+
+Here are described some examples about traslating an ASCII query. The
+RQUERY protocol must not offers a means for fully traslating an English
+question into $binarized byte-string. It offers a set of traslation for
+a not too varied set of question.
+
+
+- ``do you know any host offering anonymous FTP?''
+
+The right and full traslation of it following table of par. 9.0 is
+
+- 0004 (do you)
+
+- 1003 (know)
+
+- ``FTP'' ``ANONYMOUS''
+
+Note: that 'any host' is not traslated, it is not used this field, the
+question field, but it is used in the HH field (see 4.1.3 the host
+information wanted) in the header.
+
+9.0 Rquery extensions
+
+The RQUERY protocol itself doesn't offer many $tools (options .?) needed
+for fully replying to Rqueries, such as the maintainance of databases
+regarding possible replies, one the why of this behavior may be
+determined by the variety of the kind of reply.
+
+
+Dell'elce (759)						       [Page   ]
+ 
+INTERNET-DRAFT	    	  Remote Query Protocol		     November 93
+
+9.1 Updating databases
+
+Given the nature of the Rquery protocol, no updating-protocol is
+provided, but it would be very important to have a form of updating
+databases that strictly regard the Rquery protocol.
+
+
+10.0 Security or Authentication
+
+The RQUERY protocol doesn't basically support security or authentication
+due to the various kind of replies to queries that can be had and the
+questions that can be sent.
+
+However in the querying packet can be included a string (using format
+shown in 4.2) that may include any security or authentication data has
+two parts have convened.
+
+10.1 The Simple Security Protocol (SSP)
+
+The Simple Security Protocol (SSP) is a format specification of Security
+string. Its purpose is to supply a simple but efficient means of
+screening unauthorized queries to obtained. It is still to be defined.
+
+11.0 Author's Address
+
+   Antonio Dell'Elce
+   V COLLI DELLA FONTE 53
+   66030 FRISA CH
+   ITALY
+
+   Phone: +39-872-58430
+
+   Email: tdnycal@DSIAQ1.ING.UNIVAQ.IT
+
+
+12.0 Document Expiration
+
+This document expires May 31, 1994
+
+
+
+
+
+
+
+
+
+
+
+Dell'elce (812)						       [Page 17]
+
+
+----MESSAGE-END----
